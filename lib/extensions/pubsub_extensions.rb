@@ -1,9 +1,9 @@
 require 'google/cloud/pubsub'
 
 module Extensions
-  module PubsubExtension
+  module PubsubExtensions
     refine Google::Cloud::Pubsub::ReceivedMessage do
-      def scheculed_at
+      def scheduled_at
         return nil unless (timestamp = attributes['timestamp'])
         Time.at(timestamp.to_f)
       end

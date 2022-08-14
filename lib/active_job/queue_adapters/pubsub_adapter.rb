@@ -1,11 +1,14 @@
 # frozen_string_literal: true
 
-require_relative('../../extensions/pubsub_extension')
+require_relative('../../extensions/pubsub_extensions')
+require('google/cloud/pubsub')
+require('json')
+require('logger')
 
 module ActiveJob
   module QueueAdapters
     class PubsubAdapter
-      using Extensions::PubsubExtension
+      using Extensions::PubsubExtensions
 
       # Enqueue a job to be performed.
       #
@@ -13,7 +16,7 @@ module ActiveJob
       def enqueue(job, attributes = {})
         Rails.logger.info("[PubsubAdapter enqueue job #{job.inspect}")
         topic = pubsub.topic(job.queue_name)
-        message = topic.publish(job.serialize.to_json, attributes)
+        message = topic.publish(JSON.dump(job.serialize), attributes)
         job.provider_job_id = message.message_id
       end
 

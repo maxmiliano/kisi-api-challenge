@@ -1,4 +1,8 @@
+require_relative '../extensions/pubsub_extensions'
+
 class WorkerService
+  using Extensions::PubsubExtensions
+
   def initialize(queue = "default")
     @queue = queue
   end
@@ -25,14 +29,30 @@ class WorkerService
 
   def handle(message)
     puts("Data: #{message.message.data}, published at #{message.message.published_at}")
-    job = parse_message_as_job(message)
-    # job.perform(*job.arguments)
-    message.acknowledge!
+
+    if message.time_to_process?
+      puts("Message #{message.message_id} scheduled at #{message.scheduled_at} will be processed now.")
+      process_now(message)
+    else
+      puts("Message #{message.message_id} scheduled at #{message.scheduled_at} and delaeyd in #{message.remaining_time_to_schedule} seconds")
+      message.delay! message.remaining_time_to_schedule
+    end
   end
 
-  def parse_message_as_job(message)
-    serialized_job = JSON.parse(message.message.data)
-    arguments = ActiveJob::Arguments.deserialize(serialized_job["arguments"])
-    serialized_job["job_class"].constantize.new(*arguments)
+  def process_now(message)
+    begin
+      succeeded, failed = false, false
+      ActiveJob::Base.execute(JSON.parse(message.data))
+      succeeded = true
+    rescue Exception => e
+      failed = true
+      puts("Exception rescued: #{e.inspect}")
+      raise
+    ensure
+      if (succeeded || failed)
+        message.acknowledge!
+        puts("Message #{message.message_id} was acknowledge.")
+      end
+    end
   end
 end
