@@ -1,10 +1,13 @@
-require 'google/cloud/pubsub'
+# frozen_string_literal: true
+
+require("google/cloud/pubsub")
 
 module Extensions
   module PubsubExtensions
-    refine Google::Cloud::Pubsub::ReceivedMessage do
+    refine(Google::Cloud::Pubsub::ReceivedMessage) do
       def scheduled_at
-        return nil unless (timestamp = attributes['timestamp'])
+        return nil unless (timestamp = attributes["timestamp"])
+
         Time.at(timestamp.to_f)
       end
 
@@ -18,4 +21,3 @@ module Extensions
     end
   end
 end
-

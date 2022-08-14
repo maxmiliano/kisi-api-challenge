@@ -1,7 +1,9 @@
-require_relative '../extensions/pubsub_extensions'
+# frozen_string_literal: true
+
+require_relative("../extensions/pubsub_extensions")
 
 class WorkerService
-  using Extensions::PubsubExtensions
+  using(Extensions::PubsubExtensions)
 
   def initialize(queue = "default")
     @queue = queue
@@ -34,25 +36,24 @@ class WorkerService
       puts("Message #{message.message_id} scheduled at #{message.scheduled_at} will be processed now.")
       process_now(message)
     else
-      puts("Message #{message.message_id} scheduled at #{message.scheduled_at} and delaeyd in #{message.remaining_time_to_schedule} seconds")
-      message.delay! message.remaining_time_to_schedule
+      puts("Message #{message.message_id}  delaeyd in #{message.remaining_time_to_schedule} seconds")
+      message.delay!(message.remaining_time_to_schedule)
     end
   end
 
   def process_now(message)
-    begin
-      succeeded, failed = false, false
-      ActiveJob::Base.execute(JSON.parse(message.data))
-      succeeded = true
-    rescue Exception => e
-      failed = true
-      puts("Exception rescued: #{e.inspect}")
-      raise
-    ensure
-      if (succeeded || failed)
-        message.acknowledge!
-        puts("Message #{message.message_id} was acknowledge.")
-      end
+    succeeded = false
+    failed = false
+    ActiveJob::Base.execute(JSON.parse(message.data))
+    succeeded = true
+  rescue StandarError => e
+    failed = true
+    puts("Exception rescued: #{e.inspect}")
+    raise
+  ensure
+    if succeeded || failed
+      message.acknowledge!
+      puts("Message #{message.message_id} was acknowledge.")
     end
   end
 end

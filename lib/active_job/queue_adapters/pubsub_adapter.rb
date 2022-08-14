@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require_relative('../../extensions/pubsub_extensions')
-require('google/cloud/pubsub')
-require('json')
-require('logger')
+require_relative("../../extensions/pubsub_extensions")
+require("google/cloud/pubsub")
+require("json")
+require("logger")
 
 module ActiveJob
   module QueueAdapters
     class PubsubAdapter
-      using Extensions::PubsubExtensions
+      using(Extensions::PubsubExtensions)
 
       # Enqueue a job to be performed.
       #
@@ -25,7 +25,7 @@ module ActiveJob
       # @param [ActiveJob::Base] job The job to be performed.
       # @param [Float] timestamp The time to perform the job.
       def enqueue_at(job, timestamp)
-        enqueue job, timestamp: timestamp
+        enqueue(job, timestamp: timestamp)
       end
 
       private
@@ -39,4 +39,3 @@ module ActiveJob
     end
   end
 end
-
