@@ -3,7 +3,6 @@
 require("google/cloud/pubsub")
 
 class Pubsub
-
   DEFAULT_MAX_ATTEMPTS = 2
 
   # Find or create a topic.

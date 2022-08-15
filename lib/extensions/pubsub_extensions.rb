@@ -7,6 +7,7 @@ module Extensions
     refine(Google::Cloud::Pubsub::ReceivedMessage) do
       def scheduled_at
         return nil unless (timestamp = attributes["timestamp"])
+
         Time.at(timestamp.to_f)
       end
 
