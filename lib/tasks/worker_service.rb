@@ -5,8 +5,9 @@ require_relative("../extensions/pubsub_extensions")
 class WorkerService
   using(Extensions::PubsubExtensions)
 
-  def initialize(queue = "default")
+  def initialize(queue = "default", max_retry_attemps = 2)
     @queue = queue
+    @max_retry = max_retry_attemps
   end
 
   def start
@@ -30,28 +31,23 @@ class WorkerService
   end
 
   def handle(message)
-    puts("Data: #{message.message.data}, published at #{message.message.published_at}")
-
     if message.time_to_process?
-      puts("Message #{message.message_id} scheduled at #{message.scheduled_at} will be processed now.")
+      puts("Message #{message.message_id} will be processed now.")
       process_now(message)
     else
-      puts("Message #{message.message_id}  delaeyd in #{message.remaining_time_to_schedule} seconds")
+      puts("Message #{message.message_id}  delayed in #{message.remaining_time_to_schedule} seconds")
       message.delay!(message.remaining_time_to_schedule)
     end
   end
 
   def process_now(message)
-    succeeded = false
-    failed = false
     ActiveJob::Base.execute(JSON.parse(message.data))
     succeeded = true
   rescue StandarError => e
-    failed = true
     puts("Exception rescued: #{e.inspect}")
     raise
   ensure
-    if succeeded || failed
+    if succeeded
       message.acknowledge!
       puts("Message #{message.message_id} was acknowledge.")
     end

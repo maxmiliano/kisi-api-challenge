@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 require("google/cloud/pubsub")
-# require_relative("./extensions/pubsub_extension")
 
 class Pubsub
-  # using Extensions::PubsubExtension
+
+  DEFAULT_MAX_ATTEMPTS = 2
 
   # Find or create a topic.
   #
@@ -17,7 +17,7 @@ class Pubsub
 
   def subscription(name)
     sub_name = "worker-#{name}"
-    client.subscription(sub_name) || topic(name).subscribe(sub_name)
+    client.subscription(sub_name) || create_subscription(name, sub_name)
   end
 
   private
@@ -27,5 +27,13 @@ class Pubsub
   # @return [Google::Cloud::PubSub]
   def client
     @client ||= Google::Cloud::PubSub.new(project_id: "code-challenge")
+  end
+
+  def create_subscription(name, subscription_name)
+    morgue_name = "morgue-#{name}"
+    morgue_topic = topic(morgue_name)
+    topic(name).subscribe(subscription_name,
+                          dead_letter_topic: morgue_topic,
+                          dead_letter_max_delivery_attempts: DEFAULT_MAX_ATTEMPTS)
   end
 end
