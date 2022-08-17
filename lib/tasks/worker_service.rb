@@ -5,9 +5,10 @@ require_relative("../extensions/pubsub_extensions")
 class WorkerService
   using(Extensions::PubsubExtensions)
 
-  def initialize(queue = "default", max_retry_attemps = 2)
+  def initialize(queue = "default", max_retry_attempts = 2)
     @queue = queue
-    @max_retry = max_retry_attemps
+    @max_retry = max_retry_attempts
+    @logger = Rails.logger
   end
 
   def start
@@ -32,10 +33,10 @@ class WorkerService
 
   def handle(message)
     if message.time_to_process?
-      puts("Message #{message.message_id} will be processed now.")
+      logger.info("Processing #{message.message_id} now")
       process_now(message)
     else
-      puts("Message #{message.message_id}  delayed in #{message.remaining_time_to_schedule} seconds")
+      logger.info("Scheduling #{message.message_id} for #{message.time_to_process}")
       message.delay!(message.remaining_time_to_schedule)
     end
   end
@@ -44,12 +45,15 @@ class WorkerService
     ActiveJob::Base.execute(JSON.parse(message.data))
     succeeded = true
   rescue StandarError => e
-    puts("Exception rescued: #{e.inspect}")
+    logger.error("Error processing #{message.message_id}: #{e.message}")
     raise
   ensure
     if succeeded
       message.acknowledge!
-      puts("Message #{message.message_id} was acknowledge.")
+      logger.info("Processed #{message.message_id}")
+    else
+      message.nack!(max_delivery_attempts: @max_retry, nack_delay: 5*120)
+      logger.info("Failed to process #{message.message_id}. Delivery Attempt: #{message.delivery_attempt}")
     end
   end
 end

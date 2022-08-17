@@ -3,7 +3,6 @@
 require("google/cloud/pubsub")
 
 class Pubsub
-  DEFAULT_MAX_ATTEMPTS = 2
 
   # Find or create a topic.
   #
@@ -14,9 +13,14 @@ class Pubsub
     client.topic(topic_name) || client.create_topic(topic_name)
   end
 
+  def morgue(name)
+    morgue_name = "morgue-#{name}"
+    morgue_topic = topic(morgue_name)
+  end
+
   def subscription(name)
     sub_name = "worker-#{name}"
-    client.subscription(sub_name) || create_subscription(name, sub_name)
+    client.subscription(sub_name) || create_subscription(name)
   end
 
   private
@@ -28,11 +32,8 @@ class Pubsub
     @client ||= Google::Cloud::PubSub.new(project_id: "code-challenge")
   end
 
-  def create_subscription(name, subscription_name)
-    morgue_name = "morgue-#{name}"
-    morgue_topic = topic(morgue_name)
-    topic(name).subscribe(subscription_name,
-                          dead_letter_topic: morgue_topic,
-                          dead_letter_max_delivery_attempts: DEFAULT_MAX_ATTEMPTS)
+  def create_subscription(name)
+    sub_name = "worker-#{name}"
+    topic(name).subscribe(sub_name, dead_letter_topic: morgue(name))
   end
 end
