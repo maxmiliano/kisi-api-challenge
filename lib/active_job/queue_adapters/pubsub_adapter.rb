@@ -6,8 +6,12 @@ module ActiveJob
       # Enqueue a job to be performed.
       #
       # @param [ActiveJob::Base] job The job to be performed.
-      def enqueue(job)
-        raise(NotImplementedError)
+
+      def enqueue(job, attributes = {})
+        attributes = attributes.merge(job.serialize)
+        Rails.logger.info("Enqueuing #{job.class.name} with #{attributes}")
+        message = pubsub.topic(job.queue_name).publish(JSON.dump(job.serialize), attributes)
+        job.provider_job_id = message.message_id
       end
 
       # Enqueue a job to be performed at a certain time.
