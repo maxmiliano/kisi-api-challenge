@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative("./worker_service")
-
 namespace(:worker) do
   desc("Run the worker")
   task(run: :environment) do
@@ -9,8 +7,7 @@ namespace(:worker) do
 
     puts("Worker starting...")
 
-    WorkerService.new("default").start
-
+    # Block, letting processing threads continue in the background
     sleep
   end
 end
