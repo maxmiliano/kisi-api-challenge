@@ -24,4 +24,11 @@ To start a console:
 $ docker compose run --rm web bin/rails console
 ```
 
-If you run docker with a VM (e.g. Docker Desktop for Mac) we recommend you allocate at least 2GB Memory
+To create a batch of jobs:
+```
+# Run this inside console: 
+1000.times { SaySomethingJob.perform_later }
+SaySomethingJob.set(wait: 2.minutes).perform_later
+```
+
+Note: If you run docker with a VM (e.g. Docker Desktop for Mac) we recommend you allocate at least 2GB Memory
