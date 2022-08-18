@@ -36,6 +36,6 @@ class Pubsub
     sub_name = "worker-#{name}"
     topic(name).subscribe(sub_name, 
                           dead_letter_topic: morgue(name),
-                          dead_letter_max_delivery_attempts: 3)
+                          dead_letter_max_delivery_attempts: 2)
   end
 end

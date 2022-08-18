@@ -6,20 +6,17 @@ require("logger")
 class WorkerService
   using(Extensions::PubsubExtensions)
 
-  def initialize(queue = "default", max_retry_attempts = 2)
+  def initialize(queue = "default")
     Rails.logger.info("Worker starting...")
     @queue = queue
-    @max_retry = max_retry_attempts
-    @logger = Rails.logger
   end
 
   def start
-    subscriber.start
-
     ActiveSupport::Notifications.subscribe "perform.active_job" do |name, start, finish, id, payload|
-      Rails.logger.info("Performing #{payload[:job]}")
+      Rails.logger.info("Performing #{payload[:job]}. Started at #{start}, finished at #{finish}")
     end
 
+    subscriber.start
   end
 
   private
@@ -57,9 +54,9 @@ class WorkerService
   ensure
     if succeeded
       message.acknowledge!
-      Rails.logger.info("Processed #{message.message_id}")
+      Rails.logger.info("Processed #{message.message_id}.")
     else
-      message.nack!(max_delivery_attempts: @max_retry, nack_delay: 5*120)
+      message.nack!(nack_delay: 5*60)
       Rails.logger.info("Failed to process #{message.message_id}. Delivery Attempt: #{message.delivery_attempt}")
     end
   end
