@@ -12,7 +12,7 @@ class WorkerService
   end
 
   def start
-    ActiveSupport::Notifications.subscribe "perform.active_job" do |name, start, finish, id, payload|
+    ActiveSupport::Notifications.subscribe("perform.active_job") do |_name, start, finish, _id, payload|
       Rails.logger.info("Performing #{payload[:job]}. Started at #{start}, finished at #{finish}")
     end
 
@@ -47,17 +47,11 @@ class WorkerService
 
   def process_now(message)
     ActiveJob::Base.execute(JSON.parse(message.data))
-    succeeded = true
+    Rails.logger.info("Processed #{message.message_id}.")
+    message.acknowledge!
   rescue StandarError => e
     Rails.logger.error("Error processing #{message.message_id}: #{e.message}")
-    raise
-  ensure
-    if succeeded
-      message.acknowledge!
-      Rails.logger.info("Processed #{message.message_id}.")
-    else
-      message.nack!(nack_delay: 5*60)
-      Rails.logger.info("Failed to process #{message.message_id}. Delivery Attempt: #{message.delivery_attempt}")
-    end
+    message.nack!(nack_delay: 5 * 60)
+    raise(e)
   end
 end

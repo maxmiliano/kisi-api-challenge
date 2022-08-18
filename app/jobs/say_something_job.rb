@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require('logger')
+require("logger")
 
 class SaySomethingJob < ApplicationJob
   queue_as(:default)

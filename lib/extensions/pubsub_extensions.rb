@@ -18,7 +18,6 @@ module Extensions
       def time_to_process?
         remaining_time_to_schedule.zero?
       end
-
     end
   end
 end

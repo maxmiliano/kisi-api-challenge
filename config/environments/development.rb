@@ -58,5 +58,4 @@ Rails.application.configure do
   # config.action_cable.disable_request_forgery_protection = true
   config.logger = Logger.new(MY_APPLICATION_LOG_OUTPUT)
   config.level = 0
-
 end

@@ -24,9 +24,9 @@ Bundler.require(*Rails.groups)
 require_relative("../lib/active_job/queue_adapters/pubsub_adapter")
 require_relative("../lib/pubsub")
 
-if ENV['DOCKER_LOGS']
-  fd = IO.sysopen("/proc/1/fd/1","w")
-  io = IO.new(fd,"w")
+if ENV["DOCKER_LOGS"]
+  fd = IO.sysopen("/proc/1/fd/1", "w")
+  io = IO.new(fd, "w")
   io.sync = true
   MY_APPLICATION_LOG_OUTPUT = io
 else
@@ -53,6 +53,5 @@ module KisiApiChallenge
 
     # Configures the custom queue adapter.
     config.active_job.queue_adapter = :pubsub
-
   end
 end

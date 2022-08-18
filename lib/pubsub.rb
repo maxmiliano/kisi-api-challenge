@@ -3,7 +3,6 @@
 require("google/cloud/pubsub")
 
 class Pubsub
-
   # Find or create a topic.
   #
   # @param topic [String] The name of the topic to find or create
@@ -15,7 +14,7 @@ class Pubsub
 
   def morgue(name)
     morgue_name = "morgue-#{name}"
-    morgue_topic = topic(morgue_name)
+    topic(morgue_name)
   end
 
   def subscription(name)
@@ -34,7 +33,7 @@ class Pubsub
 
   def create_subscription(name)
     sub_name = "worker-#{name}"
-    topic(name).subscribe(sub_name, 
+    topic(name).subscribe(sub_name,
                           dead_letter_topic: morgue(name),
                           dead_letter_max_delivery_attempts: 2)
   end
