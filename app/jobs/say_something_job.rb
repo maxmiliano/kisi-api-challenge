@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
+require('logger')
+
 class SaySomethingJob < ApplicationJob
   queue_as(:default)
 
-  def perform(phrase: "Something!")
+  def perform
     Rails.logger.info("Hi, I'm an Example Job")
-
     sleep(2.seconds)
-    Rails.logger.info(phrase)
+    Rails.logger.info("Something")
     sleep(2.seconds)
-
     Rails.logger.info("Bye!")
   end
 end

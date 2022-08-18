@@ -9,7 +9,7 @@ namespace(:worker) do
 
     puts("Worker starting...")
 
-    WorkerService.new("default").start
+    WorkerService.new("default", 2).start
 
     sleep
   end
