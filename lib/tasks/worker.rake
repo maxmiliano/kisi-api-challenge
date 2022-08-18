@@ -7,7 +7,8 @@ namespace(:worker) do
 
     puts("Worker starting...")
 
-    # Block, letting processing threads continue in the background
+    WorkerService.new("default", 2).start
+
     sleep
   end
 end
